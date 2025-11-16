@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نموذج طلب نقل العفش</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 py-10">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 text-center text-blue-700">نموذج طلب نقل العفش</h2>
+
+    <form id="moveForm" class="space-y-4">
+
+      <!-- تفاصيل نقل العفش -->
+      <label class="block">
+        <span class="font-semibold">تفاصيل نقل العفش *</span>
+        <textarea required name="details" class="w-full mt-1 p-2 border rounded-lg" rows="3" placeholder="اكتب تفاصيل نقل العفش"></textarea>
+      </label>
+
+      <!-- محتويات نقل العفش -->
+      <label class="block">
+        <span class="font-semibold">محتويات نقل العفش *</span>
+        <textarea required name="items" class="w-full mt-1 p-2 border rounded-lg" rows="3" placeholder="اكتب المحتويات"></textarea>
+      </label>
+
+      <div class="grid grid-cols-2 gap-4">
+        <!-- نقل من الدور -->
+        <label class="block">
+          <span class="font-semibold">نقل من الدور *</span>
+          <input required type="number" name="from_floor" class="w-full mt-1 p-2 border rounded-lg" placeholder="مثال: 3" />
+        </label>
+
+        <!-- إلى الدور -->
+        <label class="block">
+          <span class="font-semibold">إلى الدور *</span>
+          <input required type="number" name="to_floor" class="w-full mt-1 p-2 border rounded-lg" placeholder="مثال: 5" />
+        </label>
+      </div>
+
+      <!-- العنوان من وإلى -->
+      <label class="block">
+        <span class="font-semibold">العنوان من وإلى *</span>
+        <textarea required name="address" class="w-full mt-1 p-2 border rounded-lg" rows="2" placeholder="اكتب العنوان بالتفصيل"></textarea>
+      </label>
+      <!-- رقم الواتساب -->
+      <label class="block">
+        <span class="font-semibold">رقم الواتساب (لتأكيد الطلب) *</span>
+        <input required type="tel" name="whatsapp" id="whatsapp" class="w-full mt-1 p-2 border rounded-lg" placeholder="مثال: 2010XXXXXXXX (بدون +)" />
+      </label>
+
+      <div class="grid grid-cols-3 gap-4 items-end">
+        <!-- كود التفعيل -->
+        <label class="block col-span-2">
+          <span class="font-semibold">كود التفعيل (OTP) *</span>
+          <input required type="text" name="otp" id="otp" class="w-full mt-1 p-2 border rounded-lg" placeholder="اكتب الكود المرسل على واتساب" />
+        </label>
+
+        <button type="button" id="sendOtpBtn" class="bg-green-600 text-white py-2 px-3 rounded-lg text-sm font-semibold hover:bg-green-700 transition-all">
+          إرسال الكود
+        </button>
+      </div>
+
+      <p id="otpMsg" class="text-center text-sm mt-1"></p>
+
+      <!-- ملاحظات إضافية -->
+      <label class="block">
+        <span class="font-semibold">ملاحظات إضافية</span>
+        <textarea name="notes" class="w-full mt-1 p-2 border rounded-lg" rows="2" placeholder="اكتب أي ملاحظات إضافية"></textarea>
+      </label>
+
+      <!-- زر ارسال الطلب -->
+      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all">إرسال الطلب</button>
+      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all">إرسال الطلب</button>
+    </form>
+
+    <p id="msg" class="text-center mt-4 font-semibold"></p>
+  </div>
+
+  <script>
+    const scriptURL = "PASTE_GOOGLE_SCRIPT_URL_HERE";
+    const form = document.getElementById("moveForm");
+    const msg = document.getElementById("msg");
+    const sendOtpBtn = document.getElementById("sendOtpBtn");
+    const otpMsg = document.getElementById("otpMsg");
+
+    // إرسال كود التفعيل عبر UltraMsg
+    sendOtpBtn.addEventListener("click", () => {
+      const whatsapp = document.getElementById("whatsapp").value.trim();
+      if (!whatsapp) {
+        otpMsg.innerHTML = "من فضلك أدخل رقم الواتساب أولاً.";
+        return;
+      }
+
+      otpMsg.innerHTML = "جاري إرسال الكود...";
+      const data = new FormData();
+      data.append("action", "send_otp");
+      data.append("whatsapp", whatsapp);
+
+      fetch(scriptURL, { method: "POST", body: data })
+        .then((res) => res.text())
+        .then(() => {
+          otpMsg.innerHTML = "تم إرسال الكود إلى واتساب، برجاء إدخاله في الخانة أعلاه.";
+        })
+        .catch(() => {
+          otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
+        });
+    });
+
+    // إرسال الطلب بعد إدخال OTP
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      msg.innerHTML = "جاري الإرسال...";
+
+      const formData = new FormData(form);
+      formData.append("action", "submit_order");
+
+      fetch(scriptURL, { method: "POST", body: formData })
+        .then((res) => res.text())
+        .then((text) => {
+          if (text.includes("OTP_OK")) {
+            msg.innerHTML = "تم إرسال الطلب وتأكيد رقم الواتساب بنجاح!";
+            form.reset();
+            otpMsg.innerHTML = "";
+          } else {
+            msg.innerHTML = "كود التفعيل غير صحيح أو منتهي الصلاحية.";
+          }
+        })
+        .catch(() => {
+          msg.innerHTML = "حدث خطأ أثناء الإرسال، حاول مرة أخرى.";
+        });
+    });
+  </script>
+</body>
+</html>
