@@ -87,7 +87,7 @@
   const sendOtpBtn = document.getElementById("sendOtpBtn");
   const otpMsg = document.getElementById("otpMsg");
 
-  // إرسال كود التفعيل
+  // إرسال كود التفعيل (كما هو شغال عندك)
   sendOtpBtn.addEventListener("click", () => {
     const whatsapp = document.getElementById("whatsapp").value.trim();
     if (!whatsapp) {
@@ -116,31 +116,27 @@
       });
   });
 
-  // إرسال الطلب بعد إدخال OTP (باستخدام no-cors)
+  // إرسال الطلب بعد إدخال البيانات (بدون تحقق OTP مؤقتًا)
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    msg.innerHTML = "جاري الإرسال...";
+    msg.innerHTML = "جاري إرسال الطلب...";
 
     const formData = new FormData(form);
     formData.append("action", "submit_order");
 
-    fetch(scriptURL, {
-      method: "POST",
-      body: formData,
-      mode: "no-cors"   // 👈 هنا السحر
-    })
-      .then(() => {
-        // لن نستطيع قراءة الرد، لكن لو مفيش Network Error نعتبره ناجح
-        msg.innerHTML = "تم إرسال الطلب، وسيتم مراجعتك بعد تأكيد البيانات.";
-        form.reset();
-        otpMsg.innerHTML = "";
+    fetch(scriptURL, { method: "POST", body: formData })
+      .then((res) => res.text())
+      .then((text) => {
+        console.log("submit_order response:", text);
+        msg.innerHTML = "رد السيرفر عند إرسال الطلب: " + text;
       })
       .catch((err) => {
         console.error("submit_order error:", err);
-        msg.innerHTML = "ما زال هناك خطأ فى الاتصال: " + err;
+        msg.innerHTML = "خطأ فى الاتصال (fetch): " + err;
       });
   });
 </script>
+
 
 
 </body>
