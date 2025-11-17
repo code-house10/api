@@ -127,13 +127,16 @@
     fetch(scriptURL, { method: "POST", body: formData })
       .then((res) => res.text())
       .then((text) => {
-        console.log("submit_order response:", text);
-        msg.innerHTML = "رد السيرفر عند إرسال الطلب: " + text;
-      })
-      .catch((err) => {
-        console.error("submit_order error:", err);
-        msg.innerHTML = "خطأ فى الاتصال (fetch): " + err;
-      });
+  console.log("submit_order response:", text);
+  if (text.includes("ORDER_SAVED")) {
+    msg.innerHTML = "تم إرسال الطلب بنجاح، وسيتم التواصل معك قريبًا ✅";
+    form.reset();
+    otpMsg.innerHTML = "";
+  } else {
+    msg.innerHTML = "حدث شيء غير متوقع: " + text;
+  }
+})
+
   });
 </script>
 
