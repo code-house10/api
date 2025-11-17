@@ -43,6 +43,7 @@
         <span class="font-semibold">العنوان من وإلى *</span>
         <textarea required name="address" class="w-full mt-1 p-2 border rounded-lg" rows="2" placeholder="اكتب العنوان بالتفصيل"></textarea>
       </label>
+
       <!-- رقم الواتساب -->
       <label class="block">
         <span class="font-semibold">رقم الواتساب (لتأكيد الطلب) *</span>
@@ -70,81 +71,77 @@
       </label>
 
       <!-- زر ارسال الطلب -->
-<button type="submit"
-        class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all">
-  إرسال الطلب
-</button>   
+      <button type="submit"
+              class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all">
+        إرسال الطلب
+      </button>
     </form>
 
     <p id="msg" class="text-center mt-4 font-semibold"></p>
   </div>
 
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxvWg_ff70-5wh7qLGC4sHrr3PSTqpgOql355DbpRIlPKyZeOAt1Lj5LRypohKGEkBB0A/exec";
+    const form = document.getElementById("moveForm");
+    const msg = document.getElementById("msg");
+    const sendOtpBtn = document.getElementById("sendOtpBtn");
+    const otpMsg = document.getElementById("otpMsg");
 
-<script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbxvWg_ff70-5wh7qLGC4sHrr3PSTqpgOql355DbpRIlPKyZeOAt1Lj5LRypohKGEkBB0A/exec";
-const form = document.getElementById("moveForm");
-const msg = document.getElementById("msg");
-const sendOtpBtn = document.getElementById("sendOtpBtn");
-const otpMsg = document.getElementById("otpMsg");
-
-// إرسال كود التفعيل
-sendOtpBtn.addEventListener("click", () => {
-  const whatsapp = document.getElementById("whatsapp").value.trim();
-  if (!whatsapp) {
-    otpMsg.innerHTML = "من فضلك أدخل رقم الواتساب أولاً.";
-    return;
-  }
-
-  otpMsg.innerHTML = "جاري إرسال الكود...";
-  const data = new FormData();
-  data.append("action", "send_otp");
-  data.append("whatsapp", whatsapp);
-
-  fetch(scriptURL, { method: "POST", body: data })
-    .then((res) => res.text())
-    .then((text) => {
-      console.log("send_otp response:", text);
-      if (text.includes("OTP_SENT")) {
-        otpMsg.innerHTML = "تم إرسال الكود إلى واتساب، برجاء إدخاله في الخانة أعلاه.";
-      } else {
-        otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
+    // إرسال كود التفعيل
+    sendOtpBtn.addEventListener("click", () => {
+      const whatsapp = document.getElementById("whatsapp").value.trim();
+      if (!whatsapp) {
+        otpMsg.innerHTML = "من فضلك أدخل رقم الواتساب أولاً.";
+        return;
       }
-    })
-    .catch((err) => {
-      console.error("send_otp error:", err);
-      otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
+
+      otpMsg.innerHTML = "جاري إرسال الكود...";
+      const data = new FormData();
+      data.append("action", "send_otp");
+      data.append("whatsapp", whatsapp);
+
+      fetch(scriptURL, { method: "POST", body: data })
+        .then((res) => res.text())
+        .then((text) => {
+          console.log("send_otp response:", text);
+          if (text.includes("OTP_SENT")) {
+            otpMsg.innerHTML = "تم إرسال الكود إلى واتساب، برجاء إدخاله في الخانة أعلاه.";
+          } else {
+            otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
+          }
+        })
+        .catch((err) => {
+          console.error("send_otp error:", err);
+          otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
+        });
     });
-});
 
-// إرسال الطلب بعد إدخال OTP
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-  msg.innerHTML = "جاري الإرسال...";
+    // إرسال الطلب بعد إدخال OTP
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      msg.innerHTML = "جاري الإرسال...";
 
-  const formData = new FormData(form);
-  formData.append("action", "submit_order");
+      const formData = new FormData(form);
+      formData.append("action", "submit_order");
 
-  fetch(scriptURL, { method: "POST", body: formData })
-    .then((res) => res.text())
-    .then((text) => {
-      console.log("submit_order response:", text);
-      if (text.includes("OTP_OK")) {
-        msg.innerHTML = "تم إرسال الطلب وتأكيد رقم الواتساب بنجاح!";
-        form.reset();
-        otpMsg.innerHTML = "";
-      } else if (text.includes("OTP_INVALID")) {
-        msg.innerHTML = "كود التفعيل غير صحيح أو منتهي الصلاحية.";
-      } else {
-        // هنا لو السيرفر رجّع خطأ هنظهره لك علشان نعرف المشكلة
-        msg.innerHTML = "رسالة السيرفر: " + text;
-      }
-    })
-    .catch((err) => {
-      console.error("submit_order error:", err);
-      msg.innerHTML = "حدث خطأ أثناء الإرسال، حاول مرة أخرى.";
-    });
-});
-</script>
-
+      fetch(scriptURL, { method: "POST", body: formData })
+        .then((res) => res.text())
+        .then((text) => {
+          console.log("submit_order response:", text);
+          if (text.includes("OTP_OK")) {
+            msg.innerHTML = "تم إرسال الطلب وتأكيد رقم الواتساب بنجاح!";
+            form.reset();
+            otpMsg.innerHTML = "";
+          } else if (text.includes("OTP_INVALID")) {
+            msg.innerHTML = "كود التفعيل غير صحيح أو منتهي الصلاحية.";
+          } else {
+            msg.innerHTML = "رسالة السيرفر: " + text;
+          }
+        })
+        .catch((err) => {
+          console.error("submit_order error:", err);
+          msg.innerHTML = "حدث خطأ أثناء الإرسال، حاول مرة أخرى.";
+        });
+  </script>
 </body>
 </html>
