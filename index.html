@@ -117,9 +117,10 @@
   });
 
   // إرسال الطلب بعد إدخال البيانات (بدون تحقق OTP مؤقتًا)
+   // إرسال الطلب بعد إدخال OTP
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    msg.innerHTML = "جاري إرسال الطلب...";
+    msg.innerHTML = "جاري الإرسال...";
 
     const formData = new FormData(form);
     formData.append("action", "submit_order");
@@ -127,17 +128,30 @@
     fetch(scriptURL, { method: "POST", body: formData })
       .then((res) => res.text())
       .then((text) => {
-  console.log("submit_order response:", text);
-  if (text.includes("ORDER_SAVED")) {
-    msg.innerHTML = "تم إرسال الطلب بنجاح، وسيتم التواصل معك قريبًا ✅";
-    form.reset();
-    otpMsg.innerHTML = "";
-  } else {
-    msg.innerHTML = "حدث شيء غير متوقع: " + text;
-  }
-})
+        console.log("submit_order response:", text);
 
+        if (text.includes("ORDER_SAVED")) {
+          msg.innerHTML = "تم إرسال الطلب وتأكيد رقم الواتساب بنجاح ✅";
+          form.reset();
+          otpMsg.innerHTML = "";
+        } else if (text.includes("OTP_INVALID")) {
+          msg.innerHTML = "كود التفعيل غير صحيح أو منتهي الصلاحية، برجاء التأكد من الكود أو طلب كود جديد.";
+        } else if (text.includes("OTP_INVALID_MISSING")) {
+          msg.innerHTML = "من فضلك أدخل رقم الواتساب وكود التفعيل قبل إرسال الطلب.";
+        } else if (text.includes("SERVER_ERROR")) {
+          msg.innerHTML = "خطأ فى السيرفر: " + text;
+        } else {
+          msg.innerHTML = "حدث خطأ غير متوقع: " + text;
+        }
+      })
+      .catch((err) => {
+        console.error("submit_order error:", err);
+        msg.innerHTML = "حدث خطأ أثناء الإرسال، حاول مرة أخرى.";
+      });
   });
+
+
+
 </script>
 
 
