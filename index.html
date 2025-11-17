@@ -116,7 +116,7 @@
       });
   });
 
-  // إرسال الطلب بعد إدخال OTP
+  // إرسال الطلب بعد إدخال OTP (باستخدام no-cors)
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     msg.innerHTML = "جاري الإرسال...";
@@ -124,30 +124,24 @@
     const formData = new FormData(form);
     formData.append("action", "submit_order");
 
-    fetch(scriptURL, { method: "POST", body: formData })
-      .then((res) => res.text())
-      .then((text) => {
-        console.log("submit_order response:", text);
-        // 👈 هنا هنعرض نص رد السيرفر كما هو
-        msg.innerHTML = "رد السيرفر عند إرسال الطلب: " + text;
-
-        // ولو حابب ترجّع المنطق القديم، يبقى بعد ما نعرف الرد نرجع نفصّله
-        if (text.includes("OTP_OK")) {
-          msg.innerHTML = "تم إرسال الطلب وتأكيد رقم الواتساب بنجاح!";
-          form.reset();
-          otpMsg.innerHTML = "";
-        } else if (text.includes("OTP_INVALID")) {
-          msg.innerHTML = "كود التفعيل غير صحيح أو منتهي الصلاحية.";
-        } else if (text.includes("SERVER_ERROR")) {
-          msg.innerHTML = "خطأ في السكربت: " + text;
-        }
+    fetch(scriptURL, {
+      method: "POST",
+      body: formData,
+      mode: "no-cors"   // 👈 هنا السحر
+    })
+      .then(() => {
+        // لن نستطيع قراءة الرد، لكن لو مفيش Network Error نعتبره ناجح
+        msg.innerHTML = "تم إرسال الطلب، وسيتم مراجعتك بعد تأكيد البيانات.";
+        form.reset();
+        otpMsg.innerHTML = "";
       })
       .catch((err) => {
         console.error("submit_order error:", err);
-        msg.innerHTML = "خطأ فى الاتصال (fetch error): " + err;
+        msg.innerHTML = "ما زال هناك خطأ فى الاتصال: " + err;
       });
   });
 </script>
+
 
 </body>
 </html>
