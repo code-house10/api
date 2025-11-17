@@ -78,58 +78,65 @@
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxvWg_ff70-5wh7qLGC4sHrr3PSTqpgOql355DbpRIlPKyZeOAt1Lj5LRypohKGEkBB0A/exec";
-    const form = document.getElementById("moveForm");
-    const msg = document.getElementById("msg");
-    const sendOtpBtn = document.getElementById("sendOtpBtn");
-    const otpMsg = document.getElementById("otpMsg");
+const scriptURL = "https://script.google.com/macros/s/AKfycbxvWg_ff70-5wh7qLGC4sHrr3PSTqpgOql355DbpRIlPKyZeOAt1Lj5LRypohKGEkBB0A/exec";
+const form = document.getElementById("moveForm");
+const msg = document.getElementById("msg");
+const sendOtpBtn = document.getElementById("sendOtpBtn");
+const otpMsg = document.getElementById("otpMsg");
 
-    // إرسال كود التفعيل عبر UltraMsg
-    sendOtpBtn.addEventListener("click", () => {
-      const whatsapp = document.getElementById("whatsapp").value.trim();
-      if (!whatsapp) {
-        otpMsg.innerHTML = "من فضلك أدخل رقم الواتساب أولاً.";
-        return;
+// إرسال كود التفعيل
+sendOtpBtn.addEventListener("click", () => {
+  const whatsapp = document.getElementById("whatsapp").value.trim();
+  if (!whatsapp) {
+    otpMsg.innerHTML = "من فضلك أدخل رقم الواتساب أولاً.";
+    return;
+  }
+
+  otpMsg.innerHTML = "جاري إرسال الكود...";
+  const data = new FormData();
+  data.append("action", "send_otp");
+  data.append("whatsapp", whatsapp);
+
+  fetch(scriptURL, { method: "POST", body: data })
+    .then((res) => res.text())
+    .then((text) => {
+      if (text.includes("OTP_SENT")) {
+        otpMsg.innerHTML = "تم إرسال الكود إلى واتساب، برجاء إدخاله في الخانة أعلاه.";
+      } else {
+        otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
       }
-
-      otpMsg.innerHTML = "جاري إرسال الكود...";
-      const data = new FormData();
-      data.append("action", "send_otp");
-      data.append("whatsapp", whatsapp);
-
-      fetch(scriptURL, { method: "POST", body: data })
-        .then((res) => res.text())
-        .then(() => {
-          otpMsg.innerHTML = "تم إرسال الكود إلى واتساب، برجاء إدخاله في الخانة أعلاه.";
-        })
-        .catch(() => {
-          otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
-        });
+    })
+    .catch(() => {
+      otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
     });
+});
 
-    // إرسال الطلب بعد إدخال OTP
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      msg.innerHTML = "جاري الإرسال...";
+// إرسال الطلب بعد إدخال OTP
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  msg.innerHTML = "جاري الإرسال...";
 
-      const formData = new FormData(form);
-      formData.append("action", "submit_order");
+  const formData = new FormData(form);
+  formData.append("action", "submit_order");
 
-      fetch(scriptURL, { method: "POST", body: formData })
-        .then((res) => res.text())
-        .then((text) => {
-          if (text.includes("OTP_OK")) {
-            msg.innerHTML = "تم إرسال الطلب وتأكيد رقم الواتساب بنجاح!";
-            form.reset();
-            otpMsg.innerHTML = "";
-          } else {
-            msg.innerHTML = "كود التفعيل غير صحيح أو منتهي الصلاحية.";
-          }
-        })
-        .catch(() => {
-          msg.innerHTML = "حدث خطأ أثناء الإرسال، حاول مرة أخرى.";
-        });
+  fetch(scriptURL, { method: "POST", body: formData })
+    .then((res) => res.text())
+    .then((text) => {
+      if (text.includes("OTP_OK")) {
+        msg.innerHTML = "تم إرسال الطلب وتأكيد رقم الواتساب بنجاح!";
+        form.reset();
+        otpMsg.innerHTML = "";
+      } else if (text.includes("OTP_INVALID")) {
+        msg.innerHTML = "كود التفعيل غير صحيح أو منتهي الصلاحية.";
+      } else {
+        msg.innerHTML = "حدث خطأ أثناء الإرسال، حاول مرة أخرى.";
+      }
+    })
+    .catch(() => {
+      msg.innerHTML = "حدث خطأ أثناء الإرسال، حاول مرة أخرى.";
     });
+});
+
   </script>
 </body>
 </html>
