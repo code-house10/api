@@ -70,14 +70,17 @@
       </label>
 
       <!-- زر ارسال الطلب -->
-      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all">إرسال الطلب</button>
-      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all">إرسال الطلب</button>
+<button type="submit"
+        class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-all">
+  إرسال الطلب
+</button>   
     </form>
 
     <p id="msg" class="text-center mt-4 font-semibold"></p>
   </div>
 
   <script>
+<script>
 const scriptURL = "https://script.google.com/macros/s/AKfycbxvWg_ff70-5wh7qLGC4sHrr3PSTqpgOql355DbpRIlPKyZeOAt1Lj5LRypohKGEkBB0A/exec";
 const form = document.getElementById("moveForm");
 const msg = document.getElementById("msg");
@@ -100,13 +103,15 @@ sendOtpBtn.addEventListener("click", () => {
   fetch(scriptURL, { method: "POST", body: data })
     .then((res) => res.text())
     .then((text) => {
+      console.log("send_otp response:", text);
       if (text.includes("OTP_SENT")) {
         otpMsg.innerHTML = "تم إرسال الكود إلى واتساب، برجاء إدخاله في الخانة أعلاه.";
       } else {
         otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      console.error("send_otp error:", err);
       otpMsg.innerHTML = "حدث خطأ أثناء إرسال الكود، حاول مرة أخرى.";
     });
 });
@@ -122,6 +127,7 @@ form.addEventListener("submit", (e) => {
   fetch(scriptURL, { method: "POST", body: formData })
     .then((res) => res.text())
     .then((text) => {
+      console.log("submit_order response:", text);
       if (text.includes("OTP_OK")) {
         msg.innerHTML = "تم إرسال الطلب وتأكيد رقم الواتساب بنجاح!";
         form.reset();
@@ -129,13 +135,17 @@ form.addEventListener("submit", (e) => {
       } else if (text.includes("OTP_INVALID")) {
         msg.innerHTML = "كود التفعيل غير صحيح أو منتهي الصلاحية.";
       } else {
-        msg.innerHTML = "حدث خطأ أثناء الإرسال، حاول مرة أخرى.";
+        // هنا لو السيرفر رجّع خطأ هنظهره لك علشان نعرف المشكلة
+        msg.innerHTML = "رسالة السيرفر: " + text;
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      console.error("submit_order error:", err);
       msg.innerHTML = "حدث خطأ أثناء الإرسال، حاول مرة أخرى.";
     });
 });
+</script>
+
 
   </script>
 </body>
